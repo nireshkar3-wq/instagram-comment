@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InstaBot Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+
+<body>
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <main class="dashboard-container">
+        <header class="glass-panel header">
+            <div class="logo-area">
+                <span class="bot-icon">🤖</span>
+                <h1>InstaBot <span class="accent-text">Spam Comment</span></h1>
+            </div>
+            <div class="status-badge" id="bot-status-badge">
+                <span class="status-dot"></span>
+                <span id="status-text">Ready</span>
+            </div>
+        </header>
+
+        <section class="main-layout">
+            <div class="glass-panel control-section">
+                <div class="section-header">
+                    <h2>Account Profiles</h2>
+                    <button id="toggle-add-profile" class="icon-btn" title="Add New Account">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="profile-selection-area">
+                    <div class="input-group">
+                        <label for="profile_select">Select Saved Account</label>
+                        <div class="select-row">
+                            <select id="profile_select">
+                                <option value="default">Default (No saved credentials)</option>
+                            </select>
+                            <button id="delete-profile-btn" class="icon-btn danger" title="Delete Selected Profile">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path
+                                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                    </path>
+                                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="add-profile-form" class="hidden-form hidden">
+                    <h3>Add New Account</h3>
+                    <div class="input-group">
+                        <label for="new_profile_name">Profile Name (e.g. MyPersonalAcc)</label>
+                        <input type="text" id="new_profile_name" placeholder="Enter a unique name">
+                    </div>
+                    <div class="credentials-group">
+                        <div class="input-group">
+                            <label for="new_username">Instagram Username</label>
+                            <input type="text" id="new_username" placeholder="Username">
+                        </div>
+                        <div class="input-group">
+                            <label for="new_password">Instagram Password</label>
+                            <div class="password-wrapper">
+                                <input type="password" id="new_password" placeholder="Password">
+                                <button type="button" id="toggle-password-btn" class="toggle-password"
+                                    title="Toggle Password Visibility">
+                                    <svg class="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                    <svg class="eye-off-icon hidden" width="20" height="20" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path
+                                            d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                                        </path>
+                                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="save-profile-btn" class="secondary-btn">Save Account</button>
+                    <hr class="divider">
+                </div>
+
+                <div class="section-header">
+                    <h2>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path
+                                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                            </path>
+                        </svg>
+                        Bot Configuration
+                    </h2>
+                </div>
+                <form id="bot-form">
+                    <div class="input-group">
+                        <label for="post_url">Instagram Post URL</label>
+                        <input type="url" id="post_url" placeholder="https://www.instagram.com/p/..." required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="comment">Comment Content</label>
+                        <textarea id="comment" placeholder="Write your comment here..." required></textarea>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="count">Comment Count</label>
+                        <input type="number" id="count" value="1" min="1" max="100">
+                    </div>
+
+                    <div class="toggle-group">
+                        <span class="label">Headless Mode</span>
+                        <label class="switch">
+                            <input type="checkbox" id="headless">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="primary-btn" id="start-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                        <span>Initiate Task</span>
+                        <div class="btn-loader hidden"></div>
+                    </button>
+                </form>
+            </div>
+
+            <div class="glass-panel logs-section">
+                <div class="section-header">
+                    <h2>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                        Activity Log
+                    </h2>
+                    <button class="icon-btn" id="clear-logs" title="Clear All Logs">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 6h18"></path>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                            </path>
+                        </svg>
+                    </button>
+                </div>
+                <div id="log-console" class="log-console">
+                    <div class="log-entry system">
+                        <span class="timestamp">[12:00:00]</span>
+                        <span class="message">System initialized. Waiting for task...</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+
+</html>
